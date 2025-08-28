@@ -1,3 +1,4 @@
+
 :root{--bg:#0b0c10;--card:#12151a;--ink:#e7e7e7;--muted:#a9b0bb;--accent:#E91E63}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -34,8 +35,7 @@ section.active{display:block}
 #banner{position:fixed;top:50%;left:0;right:0;transform:translateY(-50%);z-index:30;pointer-events:none}
 #banner .track{overflow:hidden}
 #banner .msg{display:inline-block;white-space:nowrap;font-size:36px;font-weight:800;color:#fff;background:rgba(233,30,99,.95);padding:14px 24px;border-radius:12px;border:2px solid #fff;animation:roll 4s linear 1;direction:rtl}
-@keyframes roll{0%{transform:translateX(110%)}50%{transform:translateX(0%)}100%{transform:translateX(-110%)}
-}
+@keyframes roll{0%{transform:translateX(110%)}50%{transform:translateX(0%)}100%{transform:translateX(-110%)}}
 .locked-red .tile{background:#3a0a0a !important;border-color:#DE3E24 !important}
 .roundbar{position:sticky;top:0;z-index:6;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#0f1a24;border:1px solid #244;color:#fff;padding:8px 12px;border-radius:12px;margin-bottom:12px;font-weight:700}
 .roundbar #roundTime{font-size:20px;letter-spacing:1px}
