@@ -1,4 +1,10 @@
 
+function debounce(fn, wait=400) {
+  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
+const upsertPlayerCloudDebounced = debounce(upsertPlayerCloud, 500);
+    
+
 // Defaults: Firebase + Game Code
 const DEFAULT_FB_CONFIG = {
   apiKey: "AIzaSyCaUvTFms4R8ufS4jxXw0M0AtAQ763RlMc",
@@ -10,6 +16,7 @@ const DEFAULT_FB_CONFIG = {
   measurementId: "G-LJ54DX0R9Q"
 };
 const DEFAULT_GAME_CODE = 'andystag25';
+const DEFAULT_VAPID_KEY = ''; // Add your Firebase VAPID key here
 function ensureCloudDefaults(){ try{ if(!localStorage.getItem('fbConfig')) localStorage.setItem('fbConfig', JSON.stringify(DEFAULT_FB_CONFIG)); if(!localStorage.getItem('gameCode')) localStorage.setItem('gameCode', DEFAULT_GAME_CODE); }catch(e){} }
 
 function setFloating(a){}
@@ -19,7 +26,15 @@ function computeAssignedCard(name){ const seed=localStorage.getItem('seed')||'12
 function ensureOwners(){ if(!localStorage.getItem('cardOwners')) localStorage.setItem('cardOwners','{}'); }
 function ensurePlayer(){ const name=localStorage.getItem('playerName'); if(!name){ const pm=document.getElementById('playerModal'); if(pm) pm.classList.add('show'); return false; } // v16: defensive hide
  const pm=document.getElementById('playerModal'); if(pm){ pm.classList.remove('show'); pm.style.display='none'; } return true; }
-function claimCard(){ const inp=document.getElementById('playerNameInput'); const name=(inp.value||'').trim(); if(!name){ toast('Pop your name in first'); return; } const idx=computeAssignedCard(name); localStorage.setItem('playerName',name); localStorage.setItem('assignedCard', String(idx)); const owners=JSON.parse(localStorage.getItem('cardOwners')||'{}'); owners[idx]=name; localStorage.setItem('cardOwners', JSON.stringify(owners)); const pm=document.getElementById('playerModal'); if(pm){ pm.classList.remove('show'); pm.style.display='none'; } toast(`Welcome ${name}! You’re Card ${idx+1}`); renderCard(idx); window.currentCardIndex=idx; updatePlayerHeader(); renderScoreboard(); upsertPlayerCloud(name, idx, getCompletedCount()); }
+function claimCard(){ const inp=document.getElementById('playerNameInput'); const name=(inp.value||'').trim(); if(!name){ toast('Pop your name in first'); return; } const idx=computeAssignedCard(name); localStorage.setItem('playerName',name); localStorage.setItem('assignedCard', String(idx)); const owners=JSON.parse(localStorage.getItem('cardOwners')||'{}'); owners[idx]=name; localStorage.setItem('cardOwners', JSON.stringify(owners)); const pm=document.getElementById('playerModal'); if(pm){ pm.classList.remove('show'); pm.style.display='none'; } toast(`Welcome {name}! You’re Card {idx+1}`);
+
+  if (window.cloudReady && firebase?.auth()?.currentUser) {
+    const uid = firebase.auth().currentUser.uid;
+    const ref = db.collection('games').doc(gameCode).collection('players').doc(String(idx));
+    ref.set({ ownerUid: uid }, { merge: false }).catch(()=>{/* already exists */})
+      .finally(()=> ref.set({ name, cardIndex: idx, completed: getCompletedCount() }, { merge: true }));
+  }
+     renderCard(idx); window.currentCardIndex=idx; updatePlayerHeader(); renderScoreboard(); upsertPlayerCloudDebounced(name, idx, getCompletedCount()); }
 
 // Cloud sync
 window.cloudReady=false; window.db=null; window.gameCode=null;
@@ -62,7 +77,7 @@ function updatePlayerHeader(){ const name=localStorage.getItem('playerName')||''
 function getCompletedCount(){ const tiles=Array.from(document.querySelectorAll('#bingoGrid .tile')); let count=0; tiles.forEach(t=>{ if(t.classList.contains('done')){ const txt=t.textContent.trim(); if(txt!=='ANDY FREE') count++; } }); return count; }
 function renderScoreboard(){ const body=document.getElementById('scoreBody'); if(!body) return; body.innerHTML=''; if(window.playersCache&&window.playersCache.length){ const rows=[...window.playersCache].sort((a,b)=>(b.completed||0)-(a.completed||0)); rows.forEach(r=>{ const tr=document.createElement('tr'); const td1=document.createElement('td'); td1.style.padding='6px'; td1.textContent=r.name; const td2=document.createElement('td'); td2.style.padding='6px'; td2.textContent=(r.cardIndex+1).toString(); const td3=document.createElement('td'); td3.style.padding='6px'; td3.textContent=(r.completed||0); tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); body.appendChild(tr); }); return; }
  const name=localStorage.getItem('playerName')||''; const assigned=parseInt(localStorage.getItem('assignedCard')||'-1'); if(name&&assigned>=0){ const tr=document.createElement('tr'); const td1=document.createElement('td'); td1.style.padding='6px'; td1.textContent=name; const td2=document.createElement('td'); td2.style.padding='6px'; td2.textContent=(assigned+1).toString(); const td3=document.createElement('td'); td3.style.padding='6px'; td3.id='completedCell'; td3.textContent=getCompletedCount(); tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); body.appendChild(tr);} }
-function bumpCompleted(){ const c=document.getElementById('completedCell'); if(c) c.textContent=getCompletedCount(); const name=localStorage.getItem('playerName')||''; const idx=parseInt(localStorage.getItem('assignedCard')||'-1'); if(idx>=0&&name) upsertPlayerCloud(name, idx, getCompletedCount()); }
+function bumpCompleted(){ const c=document.getElementById('completedCell'); if(c) c.textContent=getCompletedCount(); const name=localStorage.getItem('playerName')||''; const idx=parseInt(localStorage.getItem('assignedCard')||'-1'); if(idx>=0&&name) upsertPlayerCloudDebounced(name, idx, getCompletedCount()); }
 
 // Timer control fns used by Admin
 let timerInt=null, remaining=30*60; function fmt(s){ const m=Math.floor(s/60).toString().padStart(2,'0'); const sec=(s%60).toString().padStart(2,'0'); return `${m}:${sec}`; }
@@ -93,3 +108,23 @@ window.addEventListener('load',()=>{ wireAdmin(); init(); });
 
 // v16: ESC closes modal if visible
 window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ const pm=document.getElementById('playerModal'); if(pm){ pm.classList.remove('show'); pm.style.display='none'; } } });
+
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'inline-flex';
+});
+async function promptInstall() {
+  if (!deferredPrompt) { toast('Install not available yet'); return; }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  toast(outcome === 'accepted' ? 'App installed 🎉' : 'Install dismissed');
+}
+window.addEventListener('load', () => {
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.onclick = promptInstall;
+});
