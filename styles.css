@@ -1,0 +1,52 @@
+
+:root{--bg:#0b0c10;--card:#12151a;--ink:#e7e7e7;--muted:#a9b0bb;--accent:#E91E63}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+a{color:#79b8ff}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,0));backdrop-filter:blur(6px)}
+.header-inner{display:flex;gap:12px;align-items:center;padding:12px 16px}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--accent)}
+.nav{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}
+.nav button{background:#1c2027;color:var(--ink);border:1px solid #262b33;border-radius:999px;padding:8px 12px;cursor:pointer}
+.nav button.active{background:var(--accent);border-color:transparent;color:white}
+main{padding:16px}
+section{display:none}
+section.active{display:block}
+.card{background:var(--card);border:1px solid #262b33;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.grid{display:grid;gap:8px}
+.grid.cols-5{grid-template-columns:repeat(5,1fr)}
+.tile{background:#1c2027;border:1px dashed #333;border-radius:12px;min-height:66px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;line-height:1.2;cursor:pointer;position:relative}
+.tile .badge{position:absolute;top:6px;right:6px;background:#222;color:#ddd;border-radius:8px;padding:2px 6px;font-size:10px}
+.tile.wild{border-style:solid;border-color:var(--accent)}
+.tile.andy{background:#DE3E24 !important;color:#fff !important;border-color:#DE3E24 !important}
+.details{border:1px solid #262b33;border-radius:12px}
+.details summary{cursor:pointer;list-style:none;padding:12px 14px;background:#101317;border-bottom:1px solid #262b33;border-radius:12px}
+.details>div{padding:12px 14px}
+.details.pink summary{background:#E91E63 !important;color:#fff !important;border-color:#E91E63 !important}
+.details.pink>div{background:#000;color:#e7e7e7}
+.details.pink .badge{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25)}
+.item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-bottom:1px dashed #2a2f37}
+.item:last-child{border-bottom:0}
+.badge{background:#1f2430;color:#cbd5e1;border:1px solid #333;border-radius:999px;padding:4px 8px;font-size:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#181b22;color:#fff;border:1px solid #333;padding:12px 16px;border-radius:12px;opacity:0;transition:all .3s;z-index:20;font-size:18px;font-weight:600}
+.toast.show{opacity:1;transform:translate(-50%,-8px)}
+#banner{position:fixed;top:50%;left:0;right:0;transform:translateY(-50%);z-index:30;pointer-events:none}
+#banner .track{overflow:hidden}
+#banner .msg{display:inline-block;white-space:nowrap;font-size:36px;font-weight:800;color:#fff;background:rgba(233,30,99,.95);padding:14px 24px;border-radius:12px;border:2px solid #fff;animation:roll 4s linear 1;direction:rtl}
+@keyframes roll{0%{transform:translateX(110%)}50%{transform:translateX(0%)}100%{transform:translateX(-110%)}}
+.locked-red .tile{background:#3a0a0a !important;border-color:#DE3E24 !important}
+.roundbar{position:sticky;top:0;z-index:6;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#0f1a24;border:1px solid #244;color:#fff;padding:8px 12px;border-radius:12px;margin-bottom:12px;font-weight:700}
+.roundbar #roundTime{font-size:20px;letter-spacing:1px}
+#playerHeader{display:block;flex-basis:100%;text-align:left;margin:2px 0 8px}
+.title-white{color:#fff;font-weight:800}
+.title-green{color:#0F3D2E;font-weight:800}
+/* v16: bigger title and username */
+.title-title{font-size:1.35rem;line-height:1.2}
+.title-user{font-size:1.6rem;line-height:1.15}
+@media(min-width:768px){ .title-title{font-size:1.6rem} .title-user{font-size:1.9rem} }
+.winner-card .tile{background:#0F3D2E !important;border-color:#0F3D2E !important;color:#fff}
+.loser-card .tile{background:#3a0a0a !important;border-color:#DE3E24 !important}
+button.danger{background:#DE3E24;color:#fff;border:1px solid #b52a18;border-radius:10px;padding:10px 12px}
+footer{padding:24px;color:var(--muted);text-align:center}
